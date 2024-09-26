@@ -1,0 +1,35 @@
+﻿@page "/profile"
+@using Blazored.LocalStorage
+@inject NavigationManager NavigationManager
+@inject ILocalStorageService LocalStorageService
+@inject HttpClient HttpClient
+
+<h3>Profile</h3>
+@if (isAuthenticated)
+{
+    <p>Welcome, authenticated user!</p>
+}
+else
+{
+    <p>You are not authorized to view this page. Redirecting to login...</p>
+}
+
+@code {
+    private bool isAuthenticated = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var token = await LocalStorageService.GetItemAsync<string>("authToken");
+        if (!string.IsNullOrEmpty(token))
+        {
+            // Attach the token to HttpClient headers for authorized API requests
+            HttpClient.DefaultRequestHeaders.Authorization =
+                new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", token);
+            isAuthenticated = true;
+        }
+        else
+        {            
+            NavigationManager.NavigateTo("/login");
+        }
+    }
+}
